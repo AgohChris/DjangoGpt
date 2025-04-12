@@ -41,3 +41,6 @@
             // Tu peux gérer l'envoi de fichier vers Django ici
         }
     });
+
+
+    

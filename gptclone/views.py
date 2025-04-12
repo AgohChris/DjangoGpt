@@ -3,6 +3,9 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+
 
 
 
@@ -22,6 +25,7 @@ def registerV(request):
         password1 = request.POST.get("password2")
 
 
+        
 
         if not (username and password and password1 and email):
                 messages.error(request, "Tous les champs sont obligatoire")
@@ -46,6 +50,19 @@ def registerV(request):
         user = User.objects.create_user(username=username, email=email, password=password)
         user.save()
         messages.success(request, "Succès")
+
+       
+        Objet_email = "Creation de Compte Mini Gpt"
+        Corps_email = render_to_string("emails/Succes.html", {"username": username})
+        
+        
+        message_email = EmailMessage(
+            Objet_email, Corps_email, "agohchris90@gmail.com", [email]
+        )
+        message_email.content_subtype = "html"
+        message_email.send()
+        return redirect("login")
+        
 
 
     return render(request, "register.html")

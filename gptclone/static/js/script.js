@@ -13,7 +13,7 @@
 
         // Simuler la réponse GPT (tu remplaces ça avec ton backend Django)
         setTimeout(() => {
-            addMessageToChat("Réponse de GPT simulée...", "bot");
+            addMessageToChat("Rps de chatgpt...", "bot");
         }, 100);
     });
 

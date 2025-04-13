@@ -16,7 +16,6 @@ import os
 
 
 load_dotenv()
-openai.api_key = os.getenv("OPEN_AI_KEY")
 
 # Create your views here.
 # @login_required
@@ -51,9 +50,9 @@ def registerV(request):
                 return redirect("register")
 
         
-        # if User.objects.filter(email=email).exists():
-        #         # messages.error(request, "Cet email est déja utilisé")   
-        #         return redirect("register")
+        if User.objects.filter(email=email).exists():
+                # messages.error(request, "Cet email est déja utilisé")   
+                return redirect("register")
         
 
         user = User.objects.create_user(username=username, email=email, password=password)
@@ -111,6 +110,7 @@ def deconnexion(request):
 @login_required
 @csrf_exempt
 def chat_avec_gtp(request):
+    openai.api_key = os.getenv("OPEN_AI_KEY")
     if request.method == "POST":
         try:
             body  = json.loads(request.body)
@@ -119,7 +119,7 @@ def chat_avec_gtp(request):
             if not message:
                 return JsonResponse({"erreur": "Message vide"}, status=400)
             
-            print(f"Message reçu : {message}")  # Ajoute un print ici pour vérifier si tu reçois bien le message
+            print(f"Message reçu : {message}")
 
             reponse = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",

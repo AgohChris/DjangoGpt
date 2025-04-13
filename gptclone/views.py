@@ -7,6 +7,7 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
 import openai
+from openai.error import OpenAIError
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt 
 import json
@@ -50,9 +51,9 @@ def registerV(request):
                 return redirect("register")
 
         
-        if User.objects.filter(email=email).exists():
-                # messages.error(request, "Cet email est déja utilisé")   
-                return redirect("register")
+        # if User.objects.filter(email=email).exists():
+        #         # messages.error(request, "Cet email est déja utilisé")   
+        #         return redirect("register")
         
 
         user = User.objects.create_user(username=username, email=email, password=password)
@@ -65,7 +66,7 @@ def registerV(request):
         
         
         message_email = EmailMessage(
-            Objet_email, Corps_email, "agohchris90@gmail.com", [email]
+            Objet_email, Corps_email, "chatminipy@gmail.com", [email]
         )
         message_email.content_subtype = "html"
         message_email.send()
@@ -130,6 +131,10 @@ def chat_avec_gtp(request):
             reponsechat = reponse.choices[0].message.content
             return JsonResponse({"response": reponsechat})
         
+        except OpenAIError as e:
+            print(f"Erreur OpenAi: {str(e)}")
+            return JsonResponse({"erreur": "Oups vous avez depasser le cota de la journée revenuez plus tart"}, status=500)
+        
         except Exception as e:
-            print(f"Erreur : {str(e)}")  # Log l'erreur ici
+            print(f"Erreur : {str(e)}")
             return JsonResponse({"erreur": str(e)}, status=500)

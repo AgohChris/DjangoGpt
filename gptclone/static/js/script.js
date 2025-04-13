@@ -49,7 +49,7 @@ function getCookie(name) {
     
 
         try {
-            const response = await fetch("/chat/", {
+            const response = await fetch("/chat_avec_gtp/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

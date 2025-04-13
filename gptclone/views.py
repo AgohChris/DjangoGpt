@@ -6,8 +6,16 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
+import openai
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt 
+import json
+from dotenv import load_dotenv
+import os
 
 
+load_dotenv()
+openai.api_key = os.getenv("OPEN_AI_KEY")
 
 # Create your views here.
 # @login_required
@@ -28,28 +36,28 @@ def registerV(request):
         
 
         if not (username and password and password1 and email):
-                messages.error(request, "Tous les champs sont obligatoire")
+                # messages.error(request, "Tous les champs sont obligatoire")
                 return redirect("register")
     
 
         if password != password1:
-                messages.error(request, "les mots de passes ne correspondent pas") 
+                # messages.error(request, "les mots de passes ne correspondent pas") 
                 return redirect("register")
 
             
         if User.objects.filter(username=username).exists():
-                messages.error(request, "Cet utilisateur existe déja")
+                # messages.error(request, "Cet utilisateur existe déja")
                 return redirect("register")
 
         
         if User.objects.filter(email=email).exists():
-                messages.error(request, "Cet email est déja utilisé")   
+                # messages.error(request, "Cet email est déja utilisé")   
                 return redirect("register")
         
 
         user = User.objects.create_user(username=username, email=email, password=password)
         user.save()
-        messages.success(request, "Succès")
+        # messages.success(request, "Succès")
 
        
         Objet_email = "Creation de Compte Mini Gpt"
@@ -81,10 +89,10 @@ def loginV(request):
             #     return redirect("login")
             
             login(request, user)
-            messages.success(request, "Connexion réussie.")
+            # messages.success(request, "Connexion réussie.")
             return redirect("home")
-        else:
-            messages.error(request, "Erreur lor de l'authentifiaction")
+        # else:
+        #     messages.error(request, "Erreur lor de l'authentifiaction")
               
 
    return render(request, "login.html")
@@ -93,10 +101,35 @@ def loginV(request):
 
 def deconnexion(request):
     if logout(request) :
-        messages.success(request,"Déconnecté")
+        # messages.success(request,"Déconnecté")
         return redirect("index")
     
     return render(request, "index.html")
 
 
+@login_required
+@csrf_exempt
+def chat_avec_gtp(request):
+    if request.method == "POST":
+        try:
+            body  = json.loads(request.body)
+            message = body.get("message")
+            
+            if not message:
+                return JsonResponse({"erreur": "Message vide"}, status=400)
+            
+            print(f"Message reçu : {message}")  # Ajoute un print ici pour vérifier si tu reçois bien le message
 
+            reponse = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "systeme", "content": "Tu es l'assistant de Py"},
+                    {"role": "user", "content": message}
+                ]
+            )
+            reponsechat = reponse.choices[0].message.content
+            return JsonResponse({"response": reponsechat})
+        
+        except Exception as e:
+            print(f"Erreur : {str(e)}")  # Log l'erreur ici
+            return JsonResponse({"erreur": str(e)}, status=500)
